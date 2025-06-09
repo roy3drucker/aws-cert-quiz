@@ -1,283 +1,360 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
-import { CheckCircle2, XCircle, RotateCcw, Trophy } from 'lucide-react';
+import { Clock, RotateCcw, BookOpen, Trophy, CheckCircle, XCircle, Zap, Target, Award, Sparkles, Cpu, Database } from 'lucide-react';
 
-interface Question {
-  id: number;
-  question: string;
-  options: string[];
-  correctAnswer: number;
-  explanation: string;
-  category: string;
-}
-
-const questions: Question[] = [
-  {
-    id: 1,
-    question: "Which AWS service is used for object storage?",
-    options: ["Amazon EBS", "Amazon S3", "Amazon EFS", "Amazon FSx"],
-    correctAnswer: 1,
-    explanation: "Amazon S3 (Simple Storage Service) is AWS's object storage service that offers industry-leading scalability, data availability, security, and performance.",
-    category: "Storage"
-  },
-  {
-    id: 2,
-    question: "What is the maximum execution time for an AWS Lambda function?",
-    options: ["5 minutes", "10 minutes", "15 minutes", "30 minutes"],
-    correctAnswer: 2,
-    explanation: "AWS Lambda functions can run for a maximum of 15 minutes (900 seconds). This limit was increased from 5 minutes in 2018.",
-    category: "Compute"
-  },
-  {
-    id: 3,
-    question: "Which AWS service provides a managed NoSQL database?",
-    options: ["Amazon RDS", "Amazon DynamoDB", "Amazon Redshift", "Amazon Aurora"],
-    correctAnswer: 1,
-    explanation: "Amazon DynamoDB is a fully managed NoSQL database service that provides fast and predictable performance with seamless scalability.",
-    category: "Database"
-  },
-  {
-    id: 4,
-    question: "What does VPC stand for in AWS?",
-    options: ["Virtual Private Cloud", "Virtual Public Cloud", "Virtual Private Container", "Virtual Processing Center"],
-    correctAnswer: 0,
-    explanation: "VPC stands for Virtual Private Cloud. It's a virtual network dedicated to your AWS account, isolated from other virtual networks in the AWS Cloud.",
-    category: "Networking"
-  },
-  {
-    id: 5,
-    question: "Which AWS service is used for content delivery and caching?",
-    options: ["Amazon Route 53", "Amazon CloudFront", "Amazon ELB", "Amazon API Gateway"],
-    correctAnswer: 1,
-    explanation: "Amazon CloudFront is a web service that speeds up distribution of your static and dynamic web content through a worldwide network of data centers called edge locations.",
-    category: "Networking"
-  },
-  {
-    id: 6,
-    question: "What is the default storage class for Amazon S3?",
-    options: ["S3 Standard", "S3 Glacier", "S3 Standard-IA", "S3 One Zone-IA"],
-    correctAnswer: 0,
-    explanation: "S3 Standard is the default storage class for Amazon S3, designed for frequently accessed data with high durability, availability, and performance.",
-    category: "Storage"
-  },
-  {
-    id: 7,
-    question: "Which AWS service provides DNS web service?",
-    options: ["Amazon CloudFront", "Amazon Route 53", "Amazon VPC", "Amazon Direct Connect"],
-    correctAnswer: 1,
-    explanation: "Amazon Route 53 is a highly available and scalable cloud Domain Name System (DNS) web service designed to route end users to Internet applications.",
-    category: "Networking"
-  },
-  {
-    id: 8,
-    question: "What is the minimum charge duration for AWS Lambda?",
-    options: ["1ms", "100ms", "1 second", "1 minute"],
-    correctAnswer: 1,
-    explanation: "AWS Lambda bills in 1ms increments, but has a minimum charge duration of 100ms for each invocation.",
-    category: "Compute"
-  },
-  {
-    id: 9,
-    question: "Which AWS service is used for monitoring and observability?",
-    options: ["Amazon CloudWatch", "Amazon CloudTrail", "Amazon Inspector", "Amazon GuardDuty"],
-    correctAnswer: 0,
-    explanation: "Amazon CloudWatch is a monitoring and observability service built for DevOps engineers, developers, site reliability engineers (SREs), and IT managers.",
-    category: "Monitoring"
-  },
-  {
-    id: 10,
-    question: "What is the maximum size of an object in Amazon S3?",
-    options: ["5 GB", "5 TB", "100 GB", "1 TB"],
-    correctAnswer: 1,
-    explanation: "The maximum size of an object in Amazon S3 is 5 TB (terabytes). Objects larger than 100 MB should be uploaded using the multipart upload capability.",
-    category: "Storage"
-  }
+const AWS_TOPICS = [
+  'AWS Identity & Access Management (IAM)',
+  'Amazon EC2 - Basics',
+  'Amazon EC2 - Advanced',
+  'Amazon EC2 - Instance Storage',
+  'High Availability & Scalability',
+  'Amazon RDS, Aurora & ElastiCache',
+  'Amazon S3 - Basics',
+  'Amazon S3 - Advanced',
+  'Amazon S3 - Security',
+  'CloudFront & Global Accelerator',
+  'AWS Storage Extras',
+  'AWS Integration & Messaging',
+  'Containers on AWS',
+  'Serverless Overview',
+  'Serverless Architectures',
+  'Databases in AWS',
+  'Data & Analytics',
+  'Machine Learning',
+  'AWS Monitoring & Performance',
+  'Advanced Identity in AWS',
+  'AWS Security & Encryption',
+  'Amazon VPC',
+  'Disaster Recovery & Migrations'
 ];
 
-export default function AWSCertQuiz() {
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedAnswers, setSelectedAnswers] = useState<number[]>([]);
-  const [showResults, setShowResults] = useState(false);
-  const [quizCompleted, setQuizCompleted] = useState(false);
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+const QUESTIONS_DB = {
+  'AWS Identity & Access Management (IAM)': [
+    {
+      question: "What is the AWS service that allows you to securely control access to AWS services and resources?",
+      options: ["AWS Config", "AWS IAM", "AWS CloudTrail", "AWS Organizations"],
+      correct: 1,
+      explanation: "AWS IAM (Identity and Access Management) is the service that enables you to manage access to AWS services and resources securely."
+    },
+    {
+      question: "Which IAM entity represents a collection of permissions that can be attached to users, groups, or roles?",
+      options: ["IAM User", "IAM Policy", "IAM Group", "IAM Role"],
+      correct: 1,
+      explanation: "An IAM Policy is a document that defines permissions and can be attached to users, groups, or roles."
+    },
+    {
+      question: "What is the principle of least privilege in IAM?",
+      options: ["Give users maximum permissions", "Give users only the permissions they need", "Give users read-only access", "Give users admin access"],
+      correct: 1,
+      explanation: "The principle of least privilege means granting users only the minimum permissions necessary to perform their job functions."
+    }
+  ],
+  'Amazon EC2 - Basics': [
+    {
+      question: "What does EC2 stand for?",
+      options: ["Elastic Container Cloud", "Elastic Compute Cloud", "Elastic Control Cloud", "Elastic Connect Cloud"],
+      correct: 1,
+      explanation: "EC2 stands for Elastic Compute Cloud - AWS's scalable computing service."
+    }
+  ]};
 
-  const handleAnswerSelect = (answerIndex: number) => {
+export default function AWSCertQuiz() {
+  const [selectedTopic, setSelectedTopic] = useState(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [answers, setAnswers] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [quizStarted, setQuizStarted] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [timerActive, setTimerActive] = useState(false);
+  const [currentQuestions, setCurrentQuestions] = useState([]);
+
+  // Timer effect
+  useEffect(() => {
+    let interval;
+    if (timerActive && timeLeft > 0) {
+      interval = setInterval(() => {
+        setTimeLeft(timeLeft - 1);
+      }, 1000);
+    } else if (timeLeft === 0 && timerActive) {
+      handleFinishQuiz();
+    }
+    return () => clearInterval(interval);
+  }, [timerActive, timeLeft]);
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const startQuiz = (topic) => {
+    const questions = QUESTIONS_DB[topic] || [];
+    setSelectedTopic(topic);
+    setCurrentQuestions(questions);
+    setCurrentQuestionIndex(0);
+    setAnswers([]);
+    setSelectedAnswer(null);
+    setShowResult(false);
+    setQuizStarted(true);
+    setTimeLeft(questions.length * 60); // 1 minute per question
+    setTimerActive(true);
+  };
+
+  const handleAnswerSelect = (answerIndex) => {
     setSelectedAnswer(answerIndex);
   };
 
   const handleNextQuestion = () => {
     if (selectedAnswer !== null) {
-      const newAnswers = [...selectedAnswers];
-      newAnswers[currentQuestion] = selectedAnswer;
-      setSelectedAnswers(newAnswers);
+      const newAnswers = [...answers];
+      newAnswers[currentQuestionIndex] = selectedAnswer;
+      setAnswers(newAnswers);
 
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(currentQuestion + 1);
-        setSelectedAnswer(selectedAnswers[currentQuestion + 1] ?? null);
+      if (currentQuestionIndex + 1 < currentQuestions.length) {
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
+        setSelectedAnswer(null);
       } else {
-        setQuizCompleted(true);
-        setShowResults(true);
+        handleFinishQuiz();
       }
     }
   };
 
-  const handlePreviousQuestion = () => {
-    if (currentQuestion > 0) {
-      setCurrentQuestion(currentQuestion - 1);
-      setSelectedAnswer(selectedAnswers[currentQuestion - 1] ?? null);
-    }
-  };
-
-  const calculateScore = () => {
-    return selectedAnswers.reduce((score, answer, index) => {
-      return score + (answer === questions[index].correctAnswer ? 1 : 0);
-    }, 0);
+  const handleFinishQuiz = () => {
+    setTimerActive(false);
+    setShowResult(true);
   };
 
   const resetQuiz = () => {
-    setCurrentQuestion(0);
-    setSelectedAnswers([]);
-    setShowResults(false);
-    setQuizCompleted(false);
+    setSelectedTopic(null);
+    setCurrentQuestionIndex(0);
     setSelectedAnswer(null);
+    setAnswers([]);
+    setShowResult(false);
+    setQuizStarted(false);
+    setTimerActive(false);
+    setTimeLeft(0);
+    setCurrentQuestions([]);
   };
 
-  const score = calculateScore();
-  const percentage = Math.round((score / questions.length) * 100);
+  const calculateScore = () => {
+    return answers.reduce((score, answer, index) => {
+      return score + (answer === currentQuestions[index]?.correct ? 1 : 0);
+    }, 0);
+  };
 
-  if (showResults) {
+  const getScoreColor = (percentage) => {
+    if (percentage >= 80) return 'text-green-600';
+    if (percentage >= 60) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
+  const getTopicIcon = (topic) => {
+    if (topic.includes('EC2') || topic.includes('Compute')) return <Cpu className="w-6 h-6" />;
+    if (topic.includes('Database') || topic.includes('RDS') || topic.includes('DynamoDB')) return <Database className="w-6 h-6" />;
+    if (topic.includes('Security') || topic.includes('IAM')) return <Award className="w-6 h-6" />;
+    return <Zap className="w-6 h-6" />;
+  };
+
+  // Topic Selection Screen
+  if (!quizStarted) {
     return (
-      <div className="max-w-4xl mx-auto p-6 space-y-6">
-        <Card>
-          <CardHeader className="text-center">
-            <CardTitle className="flex items-center justify-center gap-2 text-2xl">
-              <Trophy className="h-8 w-8 text-yellow-500" />
-              Quiz Results
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="text-center space-y-4">
-              <div className="text-4xl font-bold text-blue-600">
-                {score}/{questions.length}
-              </div>
-              <div className="text-xl text-gray-600">
-                {percentage}% Correct
-              </div>
-              <Progress value={percentage} className="w-full h-4" />
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <Award className="w-12 h-12 text-blue-600" />
+              <h1 className="text-4xl font-bold text-gray-800">AWS Certification Quiz</h1>
             </div>
+            <p className="text-xl text-gray-600">Choose a topic to test your knowledge</p>
+          </div>
 
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Question Review:</h3>
-              {questions.map((question, index) => {
-                const userAnswer = selectedAnswers[index];
-                const isCorrect = userAnswer === question.correctAnswer;
-                
-                return (
-                  <Card key={question.id} className={`border-l-4 ${isCorrect ? 'border-l-green-500' : 'border-l-red-500'}`}>
-                    <CardContent className="pt-4">
-                      <div className="flex items-start gap-3">
-                        {isCorrect ? (
-                          <CheckCircle2 className="h-5 w-5 text-green-500 mt-1 flex-shrink-0" />
-                        ) : (
-                          <XCircle className="h-5 w-5 text-red-500 mt-1 flex-shrink-0" />
-                        )}
-                        <div className="space-y-2 flex-1">
-                          <p className="font-medium">{question.question}</p>
-                          <p className="text-sm text-gray-600">
-                            Your answer: <span className={isCorrect ? 'text-green-600' : 'text-red-600'}>
-                              {question.options[userAnswer]}
-                            </span>
-                          </p>
-                          {!isCorrect && (
-                            <p className="text-sm text-green-600">
-                              Correct answer: {question.options[question.correctAnswer]}
-                            </p>
-                          )}
-                          <p className="text-sm text-gray-700 bg-gray-50 p-2 rounded">
-                            {question.explanation}
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-
-            <div className="text-center">
-              <Button onClick={resetQuiz} className="flex items-center gap-2">
-                <RotateCcw className="h-4 w-4" />
-                Retake Quiz
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {AWS_TOPICS.map((topic, index) => (
+              <div
+                key={index}
+                onClick={() => startQuiz(topic)}
+                className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 p-6 cursor-pointer border-l-4 border-blue-500 hover:border-blue-600"
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  {getTopicIcon(topic)}
+                  <h3 className="text-lg font-semibold text-gray-800">{topic}</h3>
+                </div>
+                <p className="text-sm text-gray-600 mb-3">
+                  {QUESTIONS_DB[topic]?.length || 0} questions
+                </p>
+                <div className="flex items-center gap-2 text-sm text-blue-600">
+                  <Clock className="w-4 h-4" />
+                  <span>{(QUESTIONS_DB[topic]?.length || 0)} minutes</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
-  const progress = ((currentQuestion + 1) / questions.length) * 100;
+  // Results Screen
+  if (showResult) {
+    const score = calculateScore();
+    const percentage = Math.round((score / currentQuestions.length) * 100);
+    
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-lg shadow-lg p-8">
+            <div className="text-center mb-8">
+              <Trophy className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
+              <h2 className="text-3xl font-bold text-gray-800 mb-2">Quiz Complete!</h2>
+              <div className={`text-6xl font-bold mb-2 ${getScoreColor(percentage)}`}>
+                {score}/{currentQuestions.length}
+              </div>
+              <div className={`text-2xl ${getScoreColor(percentage)}`}>
+                {percentage}%
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              {currentQuestions.map((question, index) => {
+                const userAnswer = answers[index];
+                const isCorrect = userAnswer === question.correct;
+                
+                return (
+                  <div key={index} className="border rounded-lg p-4">
+                    <div className="flex items-start gap-3 mb-3">
+                      {isCorrect ? (
+                        <CheckCircle className="w-6 h-6 text-green-500 mt-1 flex-shrink-0" />
+                      ) : (
+                        <XCircle className="w-6 h-6 text-red-500 mt-1 flex-shrink-0" />
+                      )}
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-gray-800 mb-2">
+                          Question {index + 1}: {question.question}
+                        </h4>
+                        <div className="space-y-1 text-sm">
+                          <div className={`${isCorrect ? 'text-green-600' : 'text-red-600'}`}>
+                            Your answer: {question.options[userAnswer] || 'Not answered'}
+                          </div>
+                          {!isCorrect && (
+                            <div className="text-green-600">
+                              Correct answer: {question.options[question.correct]}
+                            </div>
+                          )}
+                          <div className="text-gray-600 bg-gray-50 p-2 rounded mt-2">
+                            {question.explanation}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="flex gap-4 mt-8 justify-center">
+              <button
+                onClick={resetQuiz}
+                className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <RotateCcw className="w-4 h-4" />
+                Try Another Topic
+              </button>
+              <button
+                onClick={() => startQuiz(selectedTopic)}
+                className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              >
+                <Target className="w-4 h-4" />
+                Retake Quiz
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Quiz Screen
+  const currentQuestion = currentQuestions[currentQuestionIndex];
+  const progress = ((currentQuestionIndex + 1) / currentQuestions.length) * 100;
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-center text-2xl text-blue-600">
-            AWS Certification Quiz
-          </CardTitle>
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm text-gray-600">
-              <span>Question {currentQuestion + 1} of {questions.length}</span>
-              <span>{questions[currentQuestion].category}</span>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <div className="max-w-3xl mx-auto">
+        <div className="bg-white rounded-lg shadow-lg">
+          {/* Header */}
+          <div className="bg-blue-600 text-white p-6 rounded-t-lg">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">{selectedTopic}</h2>
+              <div className="flex items-center gap-2 text-blue-100">
+                <Clock className="w-5 h-5" />
+                <span className="text-xl font-mono">{formatTime(timeLeft)}</span>
+              </div>
             </div>
-            <Progress value={progress} className="w-full h-2" />
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div>
-            <h3 className="text-lg font-medium mb-4">
-              {questions[currentQuestion].question}
-            </h3>
-            
-            <RadioGroup
-              value={selectedAnswer?.toString() || ""}
-              onValueChange={(value) => handleAnswerSelect(parseInt(value))}
-              className="space-y-3"
-            >
-              {questions[currentQuestion].options.map((option, index) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <RadioGroupItem value={index.toString()} id={`option-${index}`} />
-                  <Label htmlFor={`option-${index}`} className="text-sm cursor-pointer flex-1">
-                    {option}
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
+            <div className="flex justify-between items-center mb-2">
+              <span>Question {currentQuestionIndex + 1} of {currentQuestions.length}</span>
+              <span>{Math.round(progress)}% Complete</span>
+            </div>
+            <div className="w-full bg-blue-500 rounded-full h-2">
+              <div 
+                className="bg-white h-2 rounded-full transition-all duration-300" 
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
           </div>
 
-          <div className="flex justify-between pt-4">
-            <Button
-              variant="outline"
-              onClick={handlePreviousQuestion}
-              disabled={currentQuestion === 0}
-            >
-              Previous
-            </Button>
-            
-            <Button
-              onClick={handleNextQuestion}
-              disabled={selectedAnswer === null}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              {currentQuestion === questions.length - 1 ? 'Finish Quiz' : 'Next'}
-            </Button>
+          {/* Question */}
+          <div className="p-6">
+            <h3 className="text-xl font-semibold text-gray-800 mb-6">
+              {currentQuestion?.question}
+            </h3>
+
+            <div className="space-y-3 mb-8">
+              {currentQuestion?.options.map((option, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleAnswerSelect(index)}
+                  className={`w-full text-left p-4 rounded-lg border-2 transition-all duration-200 ${
+                    selectedAnswer === index
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                      selectedAnswer === index
+                        ? 'border-blue-500 bg-blue-500'
+                        : 'border-gray-300'
+                    }`}>
+                      {selectedAnswer === index && (
+                        <div className="w-3 h-3 bg-white rounded-full"></div>
+                      )}
+                    </div>
+                    <span className="text-gray-800">{option}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            <div className="flex justify-between">
+              <button
+                onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))}
+                disabled={currentQuestionIndex === 0}
+                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Previous
+              </button>
+              
+              <button
+                onClick={handleNextQuestion}
+                disabled={selectedAnswer === null}
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {currentQuestionIndex === currentQuestions.length - 1 ? 'Finish Quiz' : 'Next Question'}
+              </button>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
