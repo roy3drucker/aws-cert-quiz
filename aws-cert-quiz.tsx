@@ -27,7 +27,18 @@ const AWS_TOPICS = [
   'Disaster Recovery & Migrations'
 ];
 
-const QUESTIONS_DB = {
+interface Question {
+  question: string;
+  options: string[];
+  correct: number;
+  explanation: string;
+}
+
+interface QuestionsDB {
+  [key: string]: Question[];
+}
+
+const QUESTIONS_DB: QuestionsDB = {
   'AWS Identity & Access Management (IAM)': [
     {
       question: "What is the AWS service that allows you to securely control access to AWS services and resources?",
@@ -55,22 +66,23 @@ const QUESTIONS_DB = {
       correct: 1,
       explanation: "EC2 stands for Elastic Compute Cloud - AWS's scalable computing service."
     }
-  ]};
+  ]
+};
 
 export default function AWSCertQuiz() {
-  const [selectedTopic, setSelectedTopic] = useState(null);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [answers, setAnswers] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [quizStarted, setQuizStarted] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [timerActive, setTimerActive] = useState(false);
-  const [currentQuestions, setCurrentQuestions] = useState([]);
+  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [answers, setAnswers] = useState<number[]>([]);
+  const [showResult, setShowResult] = useState<boolean>(false);
+  const [quizStarted, setQuizStarted] = useState<boolean>(false);
+  const [timeLeft, setTimeLeft] = useState<number>(0);
+  const [timerActive, setTimerActive] = useState<boolean>(false);
+  const [currentQuestions, setCurrentQuestions] = useState<Question[]>([]);
 
   // Timer effect
   useEffect(() => {
-    let interval;
+    let interval: NodeJS.Timeout | null = null;
     if (timerActive && timeLeft > 0) {
       interval = setInterval(() => {
         setTimeLeft(timeLeft - 1);
@@ -78,16 +90,18 @@ export default function AWSCertQuiz() {
     } else if (timeLeft === 0 && timerActive) {
       handleFinishQuiz();
     }
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [timerActive, timeLeft]);
 
-  const formatTime = (seconds) => {
+  const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const startQuiz = (topic) => {
+  const startQuiz = (topic: string): void => {
     const questions = QUESTIONS_DB[topic] || [];
     setSelectedTopic(topic);
     setCurrentQuestions(questions);
@@ -100,11 +114,11 @@ export default function AWSCertQuiz() {
     setTimerActive(true);
   };
 
-  const handleAnswerSelect = (answerIndex) => {
+  const handleAnswerSelect = (answerIndex: number): void => {
     setSelectedAnswer(answerIndex);
   };
 
-  const handleNextQuestion = () => {
+  const handleNextQuestion = (): void => {
     if (selectedAnswer !== null) {
       const newAnswers = [...answers];
       newAnswers[currentQuestionIndex] = selectedAnswer;
@@ -119,12 +133,12 @@ export default function AWSCertQuiz() {
     }
   };
 
-  const handleFinishQuiz = () => {
+  const handleFinishQuiz = (): void => {
     setTimerActive(false);
     setShowResult(true);
   };
 
-  const resetQuiz = () => {
+  const resetQuiz = (): void => {
     setSelectedTopic(null);
     setCurrentQuestionIndex(0);
     setSelectedAnswer(null);
@@ -136,19 +150,19 @@ export default function AWSCertQuiz() {
     setCurrentQuestions([]);
   };
 
-  const calculateScore = () => {
+  const calculateScore = (): number => {
     return answers.reduce((score, answer, index) => {
       return score + (answer === currentQuestions[index]?.correct ? 1 : 0);
     }, 0);
   };
 
-  const getScoreColor = (percentage) => {
+  const getScoreColor = (percentage: number): string => {
     if (percentage >= 80) return 'text-green-600';
     if (percentage >= 60) return 'text-yellow-600';
     return 'text-red-600';
   };
 
-  const getTopicIcon = (topic) => {
+  const getTopicIcon = (topic: string): JSX.Element => {
     if (topic.includes('EC2') || topic.includes('Compute')) return <Cpu className="w-6 h-6" />;
     if (topic.includes('Database') || topic.includes('RDS') || topic.includes('DynamoDB')) return <Database className="w-6 h-6" />;
     if (topic.includes('Security') || topic.includes('IAM')) return <Award className="w-6 h-6" />;
@@ -260,7 +274,7 @@ export default function AWSCertQuiz() {
                 Try Another Topic
               </button>
               <button
-                onClick={() => startQuiz(selectedTopic)}
+                onClick={() => selectedTopic && startQuiz(selectedTopic)}
                 className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
               >
                 <Target className="w-4 h-4" />
